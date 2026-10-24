@@ -1,0 +1,21 @@
+{
+  "name": "dsh-second-brain",
+  "version": "0.1.0",
+  "description": "Second Brain mode for DeepSeek Harness: brain-notes (tool seam) and brain-journal (event seam).",
+  "type": "module",
+  "main": "brain-notes.js",
+  "exports": {
+    ".": "./brain-notes.js",
+    "./brain-notes": "./brain-notes.js",
+    "./brain-journal": "./brain-journal.js"
+  },
+  "files": ["brain-notes.js", "brain-journal.js", "lib", "cordis.patch.yml"],
+  "scripts": {
+    "test": "node --test \"test/*.test.js\""
+  },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/schemastery": "*"
+  },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}

@@ -1,0 +1,101 @@
+# "Second Brain" mode: a custom DSH preset (a mode in the mode dropdown).
+# Structure follows the shipped Creator preset (packages/bundle/web-app/presets/cordis.patch.yml).
+# Seven built-in plugins are mounted next to our two from-scratch plugins, plus the Creator
+# runtime-inspection tools so the mode can still build and test plugins.
+- insert:
+    - id: preset-second-brain
+      name: '@deepseek-ai/dsh-agent-preset'
+      config:
+        id: second-brain
+        name: Second Brain
+        description: Notes-first coding assistant with a persistent markdown vault and a daily tool journal.
+        order: 5
+        plugins:
+          - id: persona
+            name: '@deepseek-ai/dsh-persona'
+            config:
+              prefix: >-
+                You are a coding agent powered by the {{model}} model, working with a personal
+                "second brain" of markdown notes. Before answering anything about the user's past
+                work, preferences or decisions, call brain_search. When you learn something durable
+                (a decision, a fix, a convention), save it with brain_save using a clear title and
+                short tags. Use journal_today to recall what was done earlier today. Never save
+                secrets or credentials.
+          - id: time-context
+            name: '@deepseek-ai/dsh-time-context'
+
+          # --- built-in plugins 1-2: shell + files
+          - id: tool-bash
+            name: '@deepseek-ai/dsh-tool-bash'
+            disabled: !!js process.platform === 'win32'
+          - id: tool-pwsh
+            name: '@deepseek-ai/dsh-tool-pwsh'
+            disabled: !!js process.platform !== 'win32'
+          - id: tool-fs
+            name: '@deepseek-ai/dsh-tool-fs'
+
+          # --- built-in plugin 3: content/glob search
+          - id: tool-fs-search
+            name: '@deepseek-ai/dsh-tool-fs-search'
+            config:
+              sampleOverCapGlobResults: false
+
+          # --- built-in plugin 4: todo tracking
+          - id: tool-todo
+            name: '@deepseek-ai/dsh-tool-todo'
+            config:
+              allowParallelInProgress: true
+
+          # --- built-in plugin 5: web fetch/search
+          - id: tool-web
+            name: '@deepseek-ai/dsh-tool-web'
+            config:
+              fetch: true
+              searchTimeoutMs: 60000
+
+          # --- built-in plugin 6: plan mode (read-only planning phase)
+          - id: planning
+            name: cordis:group
+            group: true
+            isolate:
+              planMode: true
+            config:
+              - id: plan-mode
+                name: '@deepseek-ai/dsh-plan-mode'
+                config:
+                  section: |
+                    You are in plan mode. Explore with read-only tools, check brain_search for relevant
+                    past decisions, then present the plan through exit_plan_mode. Do not edit files or
+                    run mutating commands until the user approves.
+
+          # --- built-in plugin 7: context compaction
+          - id: compaction
+            name: cordis:group
+            group: true
+            isolate:
+              compaction: true
+              toolResultPruner: true
+            config:
+              - id: compaction-basic
+                name: '@deepseek-ai/dsh-compaction-basic'
+              - id: command-compact
+                name: '@deepseek-ai/dsh-command-compact'
+              - id: tool-result-pruner
+                name: '@deepseek-ai/dsh-compaction-tool-result-pruner'
+                config:
+                  thresholdChars: 8192
+                  headChars: 4096
+                  tailChars: 1024
+
+          # --- Creator-mode runtime inspection, so this mode can still test plugins
+          - id: tool-cordis
+            name: '@deepseek-ai/dsh-tool-cordis'
+          - id: tool-plugin-manager
+            name: '@deepseek-ai/dsh-plugin-manager/tools'
+            disabled: !!js "!ctx.get('profileContext')"
+
+          # --- from-scratch plugin 1 (tool seam) and 2 (event seam)
+          - id: brain-notes
+            name: 'dsh-second-brain/brain-notes'
+          - id: brain-journal
+            name: 'dsh-second-brain/brain-journal'

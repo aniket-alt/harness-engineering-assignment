@@ -1,0 +1,4 @@
+# Mount the dice plugin at host level: a tool registered globally is offered to every mode.
+- insert:
+    - id: dice-roller
+      name: dsh-dice-roller

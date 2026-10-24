@@ -1,0 +1,11 @@
+{
+  "name": "dsh-dice-roller",
+  "version": "1.0.0",
+  "description": "Adds a 'dice' tool (corrected from a Creator-mode generated attempt).",
+  "type": "module",
+  "main": "index.js",
+  "files": ["index.js", "roll.js", "cordis.patch.yml"],
+  "scripts": { "test": "node --test \"test/*.test.js\"" },
+  "peerDependencies": { "@deepseek-ai/dsh-tools": "*" },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}
