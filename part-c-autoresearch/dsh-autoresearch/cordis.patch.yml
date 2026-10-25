@@ -1,0 +1,5 @@
+# Mount the reader at host level so any mode can use the research_* tools.
+# To point it at a different checkout, add: config: { projectDir: 'C:/path/to/part-c-autoresearch' }
+- insert:
+    - id: autoresearch-reader
+      name: dsh-autoresearch

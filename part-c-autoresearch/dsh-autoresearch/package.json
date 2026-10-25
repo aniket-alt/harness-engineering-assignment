@@ -1,0 +1,14 @@
+{
+  "name": "dsh-autoresearch",
+  "version": "0.1.0",
+  "description": "Read-only DSH tools over the autoresearch journal: status, history and the best diff.",
+  "type": "module",
+  "main": "index.js",
+  "files": ["index.js", "lib", "cordis.patch.yml"],
+  "scripts": { "test": "node --test \"test/*.test.js\"" },
+  "peerDependencies": {
+    "@deepseek-ai/dsh-tools": "*",
+    "@deepseek-ai/schemastery": "*"
+  },
+  "dsh": { "bundle": { "patch": "./cordis.patch.yml" } }
+}

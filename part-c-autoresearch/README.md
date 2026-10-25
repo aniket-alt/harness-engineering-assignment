@@ -58,6 +58,7 @@ src/autoresearch/
   llm.py           model boundary (Gemini or OpenRouter, plus a scripted model for tests)
   cli.py           autoresearch {eval, run, report, restore, models, ping}
 tests/             31 tests, no GPU, network or API key needed
+dsh-autoresearch/  a DeepSeek Harness plugin that reads the journal (see below)
 ```
 
 ### Protecting the measurement
@@ -84,6 +85,31 @@ Scores under a fixed wall-clock budget are noisy, and the run showed how much:
   run. Iteration 2 shows why: its two runs scored 3.061 and 2.761.
 - **Minimum margin.** An improvement must exceed `min_delta` (0.02), not merely be lower.
 - **Exact revert.** Every non-improvement restores the previous file's exact bytes.
+
+## DeepSeek Harness plugin
+
+`dsh-autoresearch/` is a bundle for the DeepSeek Harness from Part B. It gives a DSH agent three
+**read-only** tools over `runs/`, so it can answer questions about an experiment from real data:
+
+| Tool | Returns |
+|---|---|
+| `research_status` | counts of kept/reverted/rejected, validation and held-out test score before and after, the best change |
+| `research_history` | the most recent experiments with decision, score, both confirmation runs and the idea tried |
+| `research_best_diff` | the cumulative code change from the baseline to the best file |
+
+It never starts a run and never edits a file. The logic is in `lib/report.js` with no harness
+imports; `index.js` is a thin wrapper, the same pattern as the Part B plugins. Its 7 unit tests
+include one that reads this project's real journal.
+
+```powershell
+cd dsh-autoresearch; npm test                                          # 7 tests
+cd ..; npx @deepseek-ai/dsh plugin --profile web add ./dsh-autoresearch
+npx @deepseek-ai/dsh web
+```
+
+Then ask a DSH agent, for example: `Use research_status and tell me how the experiment went.`
+The plugin reads the project folder it ships inside by default; set `projectDir` in
+`dsh-autoresearch/cordis.patch.yml` to point it elsewhere.
 
 ## Limitations
 
