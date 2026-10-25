@@ -1,0 +1,26 @@
+# One experiment = one editable file, one fixed evaluator, one number.
+[task]
+name = "tiny-shakespeare-gpt"
+editable = "experiment/train.py"
+protected = ["experiment/prepare.py", "program.md"]
+command = ["python", "experiment/train.py"]
+budget_seconds = 90        # training time per run, enforced by train.py via prepare.TIME_BUDGET_SECONDS
+timeout_seconds = 300      # hard wall-clock kill, including startup and evaluation
+metric = "val_bpc"         # validation bits per character
+direction = "min"          # lower is better
+baseline_runs = 2         # measure the starting file twice; the better run is the bar to beat
+confirm = true             # a would-be improvement is re-run; kept only if its WORSE run still beats the bar
+min_delta = 0.02           # must beat the best by more than this; two identical baseline runs differed by 0.018
+
+[guard]
+max_bytes = 30000
+forbidden_imports = ["os", "subprocess", "socket", "shutil", "urllib", "requests", "ctypes", "pathlib", "pickle", "importlib", "builtins"]
+forbidden_names = ["open", "exec", "eval", "compile", "__import__", "input", "getattr", "setattr", "globals", "vars", "__builtins__"]
+forbidden_attrs = ["save", "load", "system", "popen", "remove", "unlink", "write_text", "write_bytes"]
+forbidden_text = ["SCORE", "TEST"]
+required_calls = ["prepare.evaluate"]
+
+# From the fixed evaluator, a candidate may use only these names. In particular it cannot reach
+# the validation/test tensors, rebind the time budget, or alias the module.
+[guard.module_allowlist]
+prepare = ["get_batch", "evaluate", "VOCAB_SIZE", "TIME_BUDGET_SECONDS", "EVAL_BLOCK"]
