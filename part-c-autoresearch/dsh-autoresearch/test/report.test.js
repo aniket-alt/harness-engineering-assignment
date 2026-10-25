@@ -4,7 +4,7 @@ import { tmpdir } from 'node:os'
 import { dirname, join, resolve } from 'node:path'
 import { test } from 'node:test'
 import { fileURLToPath } from 'node:url'
-import { bestDiff, historyText, lineDiff, readJournal, summarize } from '../lib/report.js'
+import { bestDiff, historyText, lineDiff, readJournal, readTaskInfo, summarize } from '../lib/report.js'
 
 const REAL_PROJECT = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..')
 
@@ -29,12 +29,40 @@ const RECORDS = [
   { iteration: 3, decision: 'rejected', score: null, idea: 'sneaky', error: 'imports forbidden module os' },
 ]
 
+const MIN = { metric: 'val_bpc', direction: 'min' }
+const MAX = { metric: 'accuracy', direction: 'max' }
+
 test('summary reports counts and baseline-to-best for both splits', () => {
-  const text = summarize(RECORDS)
+  const text = summarize(RECORDS, MIN)
   assert.match(text, /experiments: 3 {2}kept=1 {2}rejected=1 {2}reverted=1/)
-  assert.match(text, /validation score: 3\.000000 -> 2\.500000/)
-  assert.match(text, /held-out test score: 3\.500000 -> 2\.900000/)
+  assert.match(text, /validation: 3\.000000 -> 2\.500000/)
+  assert.match(text, /held-out test: 3\.500000 -> 2\.900000/)
   assert.match(text, /#2 smaller batch/)
+})
+
+test('summary states the direction and the verdict, so a falling score is not misread as a decline', () => {
+  const text = summarize(RECORDS, MIN)
+  assert.match(text, /metric: val_bpc \(LOWER is better\)/)
+  assert.match(text, /validation: .*\(IMPROVED by 16\.7%\)/)
+  assert.doesNotMatch(text, /WORSENED/)
+})
+
+test('verdict follows the direction: the same numbers are WORSENED when higher is better', () => {
+  const text = summarize(RECORDS, MAX)
+  assert.match(text, /HIGHER is better/)
+  assert.match(text, /validation: .*\(WORSENED by 16\.7%\)/)
+})
+
+test('a metric that did not move is reported as unchanged', () => {
+  assert.match(summarize(RECORDS.slice(0, 2), MIN), /\(unchanged\)/)
+})
+
+test('readTaskInfo reads metric and direction from task.toml, with safe defaults', async () => {
+  await withProject(null, {}, async dir => {
+    assert.deepEqual(await readTaskInfo(dir), { metric: 'score', direction: 'min' })
+    await writeFile(join(dir, 'task.toml'), '[task]\nmetric = "accuracy"   # note\ndirection = "max"\n')
+    assert.deepEqual(await readTaskInfo(dir), { metric: 'accuracy', direction: 'max' })
+  })
 })
 
 test('summary with nothing kept says so; empty journal is a friendly message', () => {
@@ -75,9 +103,10 @@ test('bestDiff handles missing baseline, missing best and a real change', async 
 test('against the REAL journal from the 8-iteration run', async () => {
   const records = await readJournal(REAL_PROJECT)
   assert.ok(records.length >= 9, `expected the real journal, found ${records.length} records`)
-  const text = summarize(records)
-  assert.match(text, /validation score: 3\.28\d+ -> 2\.13\d+/)
-  assert.match(text, /held-out test score: 3\.79\d+ -> 2\.53\d+/)
+  const text = summarize(records, await readTaskInfo(REAL_PROJECT))
+  assert.match(text, /metric: val_bpc \(LOWER is better\)/)
+  assert.match(text, /validation: 3\.28\d+ -> 2\.13\d+ {2}\(IMPROVED by 34\.9%\)/)
+  assert.match(text, /held-out test: 3\.79\d+ -> 2\.53\d+ {2}\(IMPROVED by 33\.3%\)/)
   const diff = await bestDiff(REAL_PROJECT)
   assert.match(diff, /- BATCH_SIZE = 64/)
   assert.match(diff, /\+ BATCH_SIZE = 8/)

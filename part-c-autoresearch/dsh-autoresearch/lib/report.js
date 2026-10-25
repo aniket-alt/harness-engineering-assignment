@@ -16,7 +16,24 @@ export async function readJournal(projectDir) {
 
 const fmt = x => (x == null ? 'n/a' : Number(x).toFixed(6))
 
-export function summarize(records) {
+// The metric name and which direction is good live in task.toml. A bare "3.28 -> 2.14" is
+// ambiguous (a model once read it as a decline), so the report states the direction and verdict.
+export async function readTaskInfo(projectDir) {
+  let text = ''
+  try { text = await readFile(join(projectDir, 'task.toml'), 'utf8') } catch { /* use defaults */ }
+  const pick = key => new RegExp(`^${key}\\s*=\\s*"([^"]+)"`, 'm').exec(text)?.[1]
+  return { metric: pick('metric') ?? 'score', direction: pick('direction') === 'max' ? 'max' : 'min' }
+}
+
+function verdict(before, after, direction) {
+  if (before == null || after == null) return ''
+  const change = (after - before) / Math.abs(before) * 100
+  const better = direction === 'min' ? after < before : after > before
+  if (Math.abs(change) < 0.05) return '  (unchanged)'
+  return `  (${better ? 'IMPROVED' : 'WORSENED'} by ${Math.abs(change).toFixed(1)}%)`
+}
+
+export function summarize(records, info = { metric: 'score', direction: 'min' }) {
   if (records.length === 0) return 'no experiments recorded yet (run `autoresearch run` first)'
   const base = records[0]
   const kept = records.filter(r => r.decision === 'kept')
@@ -25,10 +42,12 @@ export function summarize(records) {
   for (const r of records.slice(1)) counts[r.decision] = (counts[r.decision] ?? 0) + 1
   const total = Object.values(counts).reduce((a, b) => a + b, 0)
   const breakdown = Object.entries(counts).sort().map(([k, v]) => `${k}=${v}`).join('  ')
+  const goal = info.direction === 'min' ? 'LOWER is better' : 'HIGHER is better'
   return [
     `experiments: ${total}  ${breakdown}`,
-    `validation score: ${fmt(base.score)} -> ${fmt(best.score)}`,
-    `held-out test score: ${fmt(base.test_score)} -> ${fmt(best.test_score)}`,
+    `metric: ${info.metric} (${goal})`,
+    `validation: ${fmt(base.score)} -> ${fmt(best.score)}${verdict(base.score, best.score, info.direction)}`,
+    `held-out test: ${fmt(base.test_score)} -> ${fmt(best.test_score)}${verdict(base.test_score, best.test_score, info.direction)}`,
     `best change: ${best === base ? '(none kept)' : `#${best.iteration} ${best.idea}`}`,
   ].join('\n')
 }

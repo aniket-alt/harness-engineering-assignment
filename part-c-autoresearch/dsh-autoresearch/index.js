@@ -5,7 +5,7 @@ import Schema from '@deepseek-ai/schemastery'
 import { defineTool } from '@deepseek-ai/dsh-tools'
 import { dirname, resolve } from 'node:path'
 import { fileURLToPath } from 'node:url'
-import { bestDiff, historyText, readJournal, summarize } from './lib/report.js'
+import { bestDiff, historyText, readJournal, readTaskInfo, summarize } from './lib/report.js'
 
 export const name = 'autoresearch-reader'
 export const inject = ['tools']
@@ -24,11 +24,13 @@ export function apply(ctx, config) {
     name: 'research_status',
     description:
       'Summarize the autoresearch experiment: how many changes were tried, kept and reverted, ' +
-      'and the validation and held-out test scores before and after. Read-only.',
+      'and the validation and held-out test scores before and after, with whether each IMPROVED or ' +
+      'WORSENED. The output states whether lower or higher scores are better: trust that line. Read-only.',
     parameters: {},
     output: asText,
     async execute() {
-      return summarize(await readJournal(config.projectDir))
+      const [records, info] = await Promise.all([readJournal(config.projectDir), readTaskInfo(config.projectDir)])
+      return summarize(records, info)
     },
   }))
 

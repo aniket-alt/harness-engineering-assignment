@@ -93,16 +93,16 @@ Scores under a fixed wall-clock budget are noisy, and the run showed how much:
 
 | Tool | Returns |
 |---|---|
-| `research_status` | counts of kept/reverted/rejected, validation and held-out test score before and after, the best change |
+| `research_status` | counts of kept/reverted/rejected, validation and held-out test score before and after with an explicit IMPROVED/WORSENED verdict and which direction is better, the best change |
 | `research_history` | the most recent experiments with decision, score, both confirmation runs and the idea tried |
 | `research_best_diff` | the cumulative code change from the baseline to the best file |
 
 It never starts a run and never edits a file. The logic is in `lib/report.js` with no harness
-imports; `index.js` is a thin wrapper, the same pattern as the Part B plugins. Its 7 unit tests
+imports; `index.js` is a thin wrapper, the same pattern as the Part B plugins. Its 11 unit tests
 include one that reads this project's real journal.
 
 ```powershell
-cd dsh-autoresearch; npm test                                          # 7 tests
+cd dsh-autoresearch; npm test                                          # 11 tests
 cd ..; npx @deepseek-ai/dsh plugin --profile web add ./dsh-autoresearch
 npx @deepseek-ai/dsh web
 ```
