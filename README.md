@@ -6,7 +6,7 @@ the checks) is what turns it into something that acts.
 
 | Part | What it is | Code | Video |
 |---|---|---|---|
-| **A** | A coding agent built from scratch in four stages | [`part-a-harness/`](part-a-harness) | [YouTube](ADD_LINK_HERE) |
+| **A** | A coding agent built from scratch in four stages | [`part-a-harness/`](part-a-harness) | [VIDEO]([ADD_LINK_HERE](https://drive.google.com/file/d/1mhXpbmHte2uF03c8WZcfljxqNV6xROqX/view?usp=sharing)) |
 | **B** | The DeepSeek Harness, customized: a new mode and plugins written from scratch | [`part-b-deepseek/`](part-b-deepseek) | [YouTube](ADD_LINK_HERE) |
 | **C** | A guarded autoresearch harness that improves an ML model on its own | [`part-c-autoresearch/`](part-c-autoresearch) | [YouTube](ADD_LINK_HERE) |
 
