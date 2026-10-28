@@ -6,8 +6,8 @@ the checks) is what turns it into something that acts.
 
 | Part | What it is | Code | Video |
 |---|---|---|---|
-| **A** | A coding agent built from scratch in four stages | [`part-a-harness/`](part-a-harness) | [VIDEO]([ADD_LINK_HERE]()) |
-| **B** | The DeepSeek Harness, customized: a new mode and plugins written from scratch | [`part-b-deepseek/`](part-b-deepseek) | [YouTube](https://drive.google.com/file/d/1mhXpbmHte2uF03c8WZcfljxqNV6xROqX/view?usp=sharing) |
+| **A** | A coding agent built from scratch in four stages | [`part-a-harness/`](part-a-harness) | [VIDEO]([https://drive.google.com/file/d/1HNDsydR9sekH8N2RY65rPTQvaoaELUEZ/view?usp=sharing]) |
+| **B** | The DeepSeek Harness, customized: a new mode and plugins written from scratch | [`part-b-deepseek/`](part-b-deepseek) | [Video](https://drive.google.com/file/d/1aNafVavO-ePK_3PJIrI9X-YhBdEQW24f/view?usp=sharing) |
 | **C** | A guarded autoresearch harness that improves an ML model on its own | [`part-c-autoresearch/`](part-c-autoresearch) | [Video](https://drive.google.com/file/d/1mhXpbmHte2uF03c8WZcfljxqNV6xROqX/view?usp=sharing) |
 
 Each folder has its own README with setup and run instructions. API keys are read from
